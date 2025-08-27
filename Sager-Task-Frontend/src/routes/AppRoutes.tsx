@@ -12,8 +12,8 @@ const suspenseFallback = (
 );
 
 const LandingPage = lazy(() => import("../routes/LandingPage"));
-const MainMap = lazy(() => import("../routes/MainMap"));
-const Dashboard = lazy(() => import("../routes/Dashboard"));
+const MainMap = lazy(() => import("./MapPage"));
+const Dashboard = lazy(() => import("./DashboardPage"));
 
 const landingPageSuspense = (
   <Suspense fallback={suspenseFallback}>

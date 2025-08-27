@@ -14,6 +14,14 @@ import type {
 import type { Feature, Point, LineString } from "geojson";
 import IconDrone from "../../../Sager-Task-Backend/Icon/drone.svg";
 
+function formatElapsedTime(start: number): string {
+  const elapsedSeconds = Math.floor((Date.now() - start) / 1000);
+  const h = String(Math.floor(elapsedSeconds / 3600)).padStart(2, "0");
+  const m = String(Math.floor((elapsedSeconds % 3600) / 60)).padStart(2, "0");
+  const s = String(elapsedSeconds % 60).padStart(2, "0");
+  return `${h}:${m}:${s}`;
+}
+
 export const getStatusColor = (registration: string) => {
   return registration.split("-")[1]?.startsWith("B") ? "green" : "red";
 };
@@ -23,6 +31,15 @@ export function flyToDrone(map: mapboxgl.Map, coordinates: [number, number]) {
     center: coordinates,
     zoom: 15,
   });
+}
+
+export function generateDroneProperties(
+  props: DroneFeatureProperties
+): DroneFeatureProperties {
+  return {
+    ...props,
+    statusColor: getStatusColor(props.registration),
+  };
 }
 
 export const handleMapClick = (
@@ -60,6 +77,62 @@ export const handleMapClick = (
   }
 };
 
+export const handleMapMouseMove = (
+  e: mapboxgl.MapMouseEvent,
+  map: mapboxgl.Map
+) => {
+  const features = map.queryRenderedFeatures(e.point, {
+    layers: [CIRCLES_LAYERS_ID],
+  });
+
+  if (features.length) {
+    const hovoredDrone: GeoJSONFeature = features[0];
+    const hovoredDroneProps = hovoredDrone.properties as DroneFeatureProperties;
+
+    const flightTime = formatElapsedTime(hovoredDroneProps.startFlightTime);
+
+    if (hovoredDrone.geometry.type === "Point") {
+      new mapboxgl.Popup()
+        .setLngLat([
+          hovoredDrone.geometry.coordinates[0],
+          hovoredDrone.geometry.coordinates[1],
+        ])
+        .setHTML(
+          `<div style="
+            color: #1c1c1c;
+            display: flex;
+            flex-direction: column; 
+            justify-content: space-between"
+            border-radius:"10px"
+            gap:5px
+            >
+            <div style="font-weight: 600; font-size: 14px; ">
+              ${hovoredDroneProps.Name}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; gap:10px; ">
+            <div style="display: flex;
+            flex-direction: column; 
+            justify-content: space-between; ">
+              <span >Altitude</span>
+              <span>${hovoredDroneProps.altitude} m</span>
+            </div>
+
+            <div style="display: flex;
+            flex-direction: column; 
+            
+            justify-content: space-between;">
+              <span >Flight Time</span>
+              <span>${flightTime}</span>
+            </div>
+            </div>
+          </div>`
+        )
+        .addTo(map);
+    }
+  }
+};
+
 export function updateDroneData(
   newFeature: Feature<Point, DroneFeatureProperties>,
   existingDrones: Feature<LineString, DroneFeatureProperties>[],
@@ -87,8 +160,8 @@ export function updateExistingDrone(
   const existingDrone = drones[index];
   existingDrone.geometry.coordinates.push(newFeature.geometry.coordinates);
   existingDrone.properties = {
-    ...newFeature.properties,
-    statusColor: getStatusColor(newFeature.properties.registration),
+    ...generateDroneProperties(newFeature.properties),
+    startFlightTime: existingDrone.properties.startFlightTime,
   };
 
   drones[index] = existingDrone;
@@ -105,8 +178,8 @@ export function addNewDrone(
       coordinates: [newFeature.geometry.coordinates],
     },
     properties: {
-      ...newFeature.properties,
-      statusColor: getStatusColor(newFeature.properties.registration),
+      ...generateDroneProperties(newFeature.properties),
+      startFlightTime: Date.now(),
     },
   };
 

@@ -2,7 +2,7 @@ import { useRef, useEffect } from "react";
 import { useMapboxMapContext } from "../../context/mapboxContext";
 import mapboxgl from "mapbox-gl";
 import { useClickedFeatureOnTheMapStore } from "../../stores/clickedFeatureOnTheMapStore";
-import { handleMapClick } from "../../utils/mapUtils";
+import { handleMapClick, handleMapMouseMove } from "../../utils/mapUtils";
 
 export function MapboxMapContainer() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -30,6 +30,7 @@ export function MapboxMapContainer() {
       instance.on("click", (e) =>
         handleMapClick(e, instance, setClickedFeature)
       );
+      instance.on("mousemove", (e) => handleMapMouseMove(e, instance));
     });
 
     setMap(instance);

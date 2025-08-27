@@ -9,6 +9,7 @@ export interface DroneFeatureProperties {
   organization: string;
   yaw: number;
   statusColor: string;
+  startFlightTime: number;
 }
 
 export type DroneFeatureCollection<G extends Geometry = Geometry> =
