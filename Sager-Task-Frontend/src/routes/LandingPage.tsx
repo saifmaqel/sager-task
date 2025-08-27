@@ -12,7 +12,7 @@ export const NAVBAR_WIDTH = 120;
 export default function LandingPage() {
   const [opened, { toggle }] = useDisclosure();
 
-  // Called useDroneWebSocket custom hook here to update the drones list and the mapbox map even when the user in  dashboard page
+  // Called useDroneWebSocket custom hook here to update the drones list even when the user in the dashboard page
   useDroneWebSocket();
 
   return (
