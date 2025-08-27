@@ -5,21 +5,16 @@ It was built as part of a coding task, using modern React and real-time updates 
 
 ---
 
-## 🛠️ Tech Stack
-
 **Frontend**
-- [React 19](https://react.dev/) – component-based UI
-- [Mantine](https://mantine.dev/) – UI components and styling
-- [Zustand](https://github.com/pmndrs/zustand) – lightweight state management
-- [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/) – interactive maps
-- [Socket.IO Client](https://socket.io/) – real-time updates
-- [React Router v7](https://reactrouter.com/) – routing
-- [Ag-Grid](https://www.ag-grid.com/) – data grid for drone lists
+- [React 19](https://react.dev/) 
+- [Mantine](https://mantine.dev/) 
+- [Zustand](https://github.com/pmndrs/zustand) 
+- [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/)
+- [Socket.IO Client](https://socket.io/) 
+- [React Router v7](https://reactrouter.com/) 
+- [Ag-Grid](https://www.ag-grid.com/)
 
-## 🚀 Getting Started
 
-### 1. Clone the repository
-```bash
 git clone https://github.com/saifmaqel/sager-task.git
 cd Sager-Task-Frontend
 npm install
