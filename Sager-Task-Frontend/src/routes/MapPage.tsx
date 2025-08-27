@@ -1,5 +1,4 @@
 import { useDocumentTitle } from "@mantine/hooks";
-import { useDroneWebSocket } from "../hooks/useDroneWebSocket";
 import { Box } from "@mantine/core";
 import { MapboxMapContainer } from "../components/map-page/MapboxMapContainer";
 import { DronesPanel } from "../components/map-page/drones-panel/DronesPanel";
@@ -9,7 +8,6 @@ import NumberOfDronesDialog from "../components/map-page/drones-panel/NumberOfDr
 
 function MapPage() {
   useDocumentTitle("SAGER - Map");
-  useDroneWebSocket();
 
   return (
     <Box flex={1}>

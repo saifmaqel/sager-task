@@ -4,12 +4,16 @@ import { useDisclosure } from "@mantine/hooks";
 
 import LandingPageHeader from "../components/landing-page/LandingPageHeader";
 import LandingPageNavBar from "../components/landing-page/LandingPageNavBar";
+import { useDroneWebSocket } from "../hooks/useDroneWebSocket";
 
 export const HEADER_HEIGHT = 70;
 export const NAVBAR_WIDTH = 120;
 
 export default function LandingPage() {
   const [opened, { toggle }] = useDisclosure();
+
+  // Called useDroneWebSocket custom hook here to update the drones list and the mapbox map even when the user in  dashboard page
+  useDroneWebSocket();
 
   return (
     <AppShell

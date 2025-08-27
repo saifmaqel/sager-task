@@ -26,6 +26,7 @@ export function useDroneWebSocket() {
       const existingDrones = [...useDroneStore.getState().drones];
 
       updateDroneData(newFeature, existingDrones, setDrones);
+      // Added the draw drones logic here to not create useEffect (might no need useEffect)
       updateMapVisualization(map, existingDrones);
     });
 

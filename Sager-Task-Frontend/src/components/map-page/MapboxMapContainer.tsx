@@ -14,11 +14,12 @@ export function MapboxMapContainer() {
   );
 
   useEffect(() => {
-    // Initialize mapbox map insatnce and store it in global contaxt
     if (mapCreatedRef.current || !mapContainerRef.current) return;
 
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
-
+    // Initialize the Mapbox map instance.
+    // Consider moving this to a separate module if the map should persist across page navigations
+    // to avoid re-creating it every time the user leaves and returns to the map page.
     const instance = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
