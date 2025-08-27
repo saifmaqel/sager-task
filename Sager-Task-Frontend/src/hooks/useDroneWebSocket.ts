@@ -1,15 +1,13 @@
 import { useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import { useDroneStore } from "../stores/droneStors";
-// import { useMapStore } from "../stores/mapboxMapStore";
-import type {
-  DroneFeatureCollection,
-  DroneFeatureProperties,
-} from "../types/mapTypes";
-import type { Feature, Geometry } from "geojson";
-import { getStatusColor } from "../utils/droneUtils";
+import type { DroneFeatureCollection } from "../types/mapTypes";
+import type { Point } from "geojson";
+import { updateDroneData, updateMapVisualization } from "../utils/mapUtils";
+import { useMapboxMapContext } from "../context/mapboxContext";
+
 export function useDroneWebSocket() {
-  // const { map } = useMapStore();
+  const { map } = useMapboxMapContext();
   const setDrones = useDroneStore((state) => state.setDrones);
 
   useEffect(() => {
@@ -22,45 +20,13 @@ export function useDroneWebSocket() {
     });
 
     socket.on("message", (data) => {
-      // Get current drones from store
+      if (!map) return;
+      const featureCollection: DroneFeatureCollection<Point> = data;
+      const newFeature = featureCollection.features[0];
       const existingDrones = [...useDroneStore.getState().drones];
 
-      const featureCollection: DroneFeatureCollection = data;
-      const newFeature = featureCollection.features[0];
-
-      const existingIndex = existingDrones.findIndex(
-        (drone) =>
-          drone.properties?.registration === newFeature.properties?.registration
-      );
-
-      if (existingIndex !== -1) {
-        const existingDrone = existingDrones[existingIndex];
-        existingDrone.geometry.coordinates.push(
-          newFeature.geometry.coordinates
-        );
-        existingDrone.properties = {
-          ...newFeature.properties,
-          statusColor: getStatusColor(newFeature.properties.registration),
-        };
-
-        existingDrones[existingIndex] = existingDrone;
-      } else {
-        const lineFeature: Feature<Geometry, DroneFeatureProperties> = {
-          ...newFeature,
-          geometry: {
-            type: "LineString",
-            coordinates: [newFeature.geometry.coordinates],
-          },
-          properties: {
-            ...newFeature.properties,
-            statusColor: getStatusColor(newFeature.properties.registration),
-          },
-        };
-
-        existingDrones.push(lineFeature);
-      }
-
-      setDrones(existingDrones);
+      updateDroneData(newFeature, existingDrones, setDrones);
+      updateMapVisualization(map, existingDrones);
     });
 
     socket.on("error", (err) => {
@@ -74,5 +40,5 @@ export function useDroneWebSocket() {
     return () => {
       socket.disconnect();
     };
-  }, [setDrones]);
+  }, [setDrones, map]);
 }

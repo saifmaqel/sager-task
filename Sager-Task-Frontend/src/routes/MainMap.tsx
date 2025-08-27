@@ -5,6 +5,7 @@ import { MapboxMapContainer } from "../components/main-map/MapboxMapContainer";
 import { DronesPanel } from "../components/main-map/drones-panel/DronesPanel";
 
 import "mapbox-gl/dist/mapbox-gl.css";
+import NumberOfDronesDialog from "../components/main-map/drones-panel/NumberOfDronesDialog";
 
 function MainMap() {
   useDocumentTitle("SAGER - Map");
@@ -14,6 +15,7 @@ function MainMap() {
     <Box flex={1}>
       <MapboxMapContainer />
       <DronesPanel />
+      <NumberOfDronesDialog />
     </Box>
   );
 }

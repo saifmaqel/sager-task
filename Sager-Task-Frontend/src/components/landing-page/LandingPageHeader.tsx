@@ -6,6 +6,7 @@ import {
   ActionIcon,
   Divider,
   Text,
+  useMantineTheme,
 } from "@mantine/core";
 
 import IconBell from "../../../../Sager-Task-Backend/Icon/bell.svg";
@@ -17,9 +18,19 @@ type LandingPageHeaderProps = {
   toggleNav: () => void;
 };
 
+import { useMediaQuery } from "@mantine/hooks";
+
 function LandingPageHeader({ isNavOpened, toggleNav }: LandingPageHeaderProps) {
+  const theme = useMantineTheme();
+  const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
+
   return (
-    <Flex justify="space-between" align="center">
+    <Flex
+      justify="space-between"
+      align="center"
+      h="100%"
+      px={{ base: "xs", sm: "md" }}
+    >
       <Flex align="center" gap="sm">
         <Burger
           opened={isNavOpened}
@@ -27,31 +38,45 @@ function LandingPageHeader({ isNavOpened, toggleNav }: LandingPageHeaderProps) {
           hiddenFrom="sm"
           size="sm"
         />
-        <Title order={1} fs="italic" fw={700}>
+        <Title order={1} fs="italic" fw={700} size={isMobile ? "h3" : "h1"}>
           SAGER
         </Title>
       </Flex>
 
       <Flex gap="md" align="center">
         <Group>
-          <ActionIcon variant="transparent">
-            <img src={IconCapture} width={24} height={24} />
+          <ActionIcon variant="transparent" size={isMobile ? "sm" : "md"}>
+            <img
+              src={IconCapture}
+              width={isMobile ? 20 : 24}
+              height={isMobile ? 20 : 24}
+            />
           </ActionIcon>
-          <ActionIcon variant="transparent">
-            <img src={IconLanguage} width={24} height={24} />
+          <ActionIcon variant="transparent" size={isMobile ? "sm" : "md"}>
+            <img
+              src={IconLanguage}
+              width={isMobile ? 20 : 24}
+              height={isMobile ? 20 : 24}
+            />
           </ActionIcon>
-          <ActionIcon variant="transparent">
-            <img src={IconBell} width={24} height={24} />
+          <ActionIcon variant="transparent" size={isMobile ? "sm" : "md"}>
+            <img
+              src={IconBell}
+              width={isMobile ? 20 : 24}
+              height={isMobile ? 20 : 24}
+            />
           </ActionIcon>
         </Group>
-        <Divider orientation="vertical" />
-        <Flex direction="column">
-          <Text fw={500}>Hello, Mohammed Omar</Text>
-          <Text size="xs">Technical Support</Text>
+
+        <Divider orientation="vertical" visibleFrom="xs" />
+        <Flex direction="column" visibleFrom="xs">
+          <Text fw={500} size={isMobile ? "xs" : "sm"}>
+            Hello, Mohammed Omar
+          </Text>
+          <Text size={isMobile ? "xs" : "xs"}>Technical Support</Text>
         </Flex>
       </Flex>
     </Flex>
   );
 }
-
 export default LandingPageHeader;

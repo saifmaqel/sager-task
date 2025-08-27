@@ -26,11 +26,10 @@ export default function LandingPage() {
           height: "100%",
         },
       }}
-      // miw="970px" //check
       h="100%"
       w="100%"
     >
-      <AppShell.Header p="xs" w="100%">
+      <AppShell.Header p={{ base: "xs", sm: "md" }}>
         <LandingPageHeader isNavOpened={opened} toggleNav={toggle} />
       </AppShell.Header>
 

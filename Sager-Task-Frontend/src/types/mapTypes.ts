@@ -8,10 +8,8 @@ export interface DroneFeatureProperties {
   pilot: string;
   organization: string;
   yaw: number;
-  statusColor?: string;
+  statusColor: string;
 }
 
-export type DroneFeatureCollection = FeatureCollection<
-  Geometry,
-  DroneFeatureProperties
->;
+export type DroneFeatureCollection<G extends Geometry = Geometry> =
+  FeatureCollection<G, DroneFeatureProperties>;

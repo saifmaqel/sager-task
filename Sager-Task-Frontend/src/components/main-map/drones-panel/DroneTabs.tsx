@@ -30,6 +30,7 @@ export function DroneTabs() {
           minHeight: 0,
           overflow: "hidden",
         }}
+        p={{ base: "xs", sm: "md" }}
       >
         <DroneList />
       </Tabs.Panel>

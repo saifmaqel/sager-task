@@ -1,29 +1,57 @@
-import { Card, Flex, Title, Box } from "@mantine/core";
+import { Card, Flex, Title, Box, useMantineTheme } from "@mantine/core";
 import DroneInfo from "./DroneInfo";
-import type { Feature } from "geojson";
-import { getStatusColor } from "../../../utils/droneUtils";
+import type { Feature, LineString } from "geojson";
+import { getStatusColor } from "../../../utils/mapUtils";
+import { useHover, useMediaQuery } from "@mantine/hooks";
+import type { DroneFeatureProperties } from "../../../types/mapTypes";
+import { useMapboxMapContext } from "../../../context/mapboxContext";
 
 interface DroneCardProps {
-  drone: Feature;
+  drone: Feature<LineString, DroneFeatureProperties>;
+  isCLicked: boolean | null;
 }
 
-export function DroneCard({ drone }: DroneCardProps) {
+export function DroneCard({ drone, isCLicked }: DroneCardProps) {
+  const theme = useMantineTheme();
+  const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`);
+
+  const { map } = useMapboxMapContext();
+  const { hovered, ref } = useHover();
+
   return (
     <Card
+      ref={ref}
       shadow="sm"
       radius={0}
-      bg="#141517"
+      bg={isCLicked ? "#3f3f3f" : hovered ? "#1f1f1f" : "#141517"}
       style={{
         border: ".5px solid black",
         borderLeft: "none",
         borderRight: "none",
-        borderTop: "2px solid black",
-        borderBottom: "2px solid black",
+        cursor: "pointer",
+        transition: "background-color 0.5s ease",
       }}
+      onClick={() => {
+        const lastVertex =
+          drone.geometry.coordinates[drone.geometry.coordinates.length - 1];
+        map?.flyTo({ center: [lastVertex[0], lastVertex[1]], zoom: 14 });
+      }}
+      p={{ base: "sm", sm: "md" }}
     >
-      <Flex direction="column">
+      <Flex
+        direction="column"
+        gap="xs"
+        justify="center"
+        align={isMobile ? "center" : ""}
+      >
         <Title order={5}>{drone.properties?.Name}</Title>
-        <Flex py="md" align="center">
+
+        <Flex
+          py={{ base: "xs", sm: "md" }}
+          align="center"
+          direction={{ base: "column", xs: "row" }}
+          gap={{ base: "sm", xs: "md" }}
+        >
           <Flex direction="column" flex={1} gap="6">
             <DroneInfo
               infoKey="Serial #"
@@ -34,6 +62,7 @@ export function DroneCard({ drone }: DroneCardProps) {
               infoValue={drone.properties?.pilot ?? "Invalid"}
             />
           </Flex>
+
           <Flex direction="column" flex={1} gap="6">
             <DroneInfo
               infoKey="Registration #"
@@ -44,6 +73,7 @@ export function DroneCard({ drone }: DroneCardProps) {
               infoValue={drone.properties?.organization ?? "Invalid"}
             />
           </Flex>
+
           <Box
             style={{
               width: 20,
