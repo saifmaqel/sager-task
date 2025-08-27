@@ -1,13 +1,13 @@
 import { useDocumentTitle } from "@mantine/hooks";
 import { useDroneWebSocket } from "../hooks/useDroneWebSocket";
 import { Box } from "@mantine/core";
-import { MapboxMapContainer } from "../components/main-map/MapboxMapContainer";
-import { DronesPanel } from "../components/main-map/drones-panel/DronesPanel";
+import { MapboxMapContainer } from "../components/map-page/MapboxMapContainer";
+import { DronesPanel } from "../components/map-page/drones-panel/DronesPanel";
 
 import "mapbox-gl/dist/mapbox-gl.css";
-import NumberOfDronesDialog from "../components/main-map/drones-panel/NumberOfDronesDialog";
+import NumberOfDronesDialog from "../components/map-page/drones-panel/NumberOfDronesDialog";
 
-function MainMap() {
+function MapPage() {
   useDocumentTitle("SAGER - Map");
   useDroneWebSocket();
 
@@ -20,4 +20,4 @@ function MainMap() {
   );
 }
 
-export default MainMap;
+export default MapPage;

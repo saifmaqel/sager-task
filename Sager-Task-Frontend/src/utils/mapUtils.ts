@@ -6,13 +6,13 @@ import {
   PATHS_SOURCE_ID,
   POINTS_SOURCE_ID,
 } from "./constants";
-import mapboxgl from "mapbox-gl";
 import type {
   DroneFeatureCollection,
   DroneFeatureProperties,
 } from "../types/mapTypes";
 import type { Feature, Point, LineString } from "geojson";
 import IconDrone from "../../../Sager-Task-Backend/Icon/drone.svg";
+import { popup } from "./PopupInstance"; // singleton popup instance
 
 function formatElapsedTime(start: number): string {
   const elapsedSeconds = Math.floor((Date.now() - start) / 1000);
@@ -27,19 +27,13 @@ export const getStatusColor = (registration: string) => {
 };
 
 export function flyToDrone(map: mapboxgl.Map, coordinates: [number, number]) {
-  map.flyTo({
-    center: coordinates,
-    zoom: 15,
-  });
+  map.flyTo({ center: coordinates, zoom: 15 });
 }
 
 export function generateDroneProperties(
   props: DroneFeatureProperties
 ): DroneFeatureProperties {
-  return {
-    ...props,
-    statusColor: getStatusColor(props.registration),
-  };
+  return { ...props, statusColor: getStatusColor(props.registration) };
 }
 
 export const handleMapClick = (
@@ -53,27 +47,10 @@ export const handleMapClick = (
 
   if (features.length) {
     const clickedDrone: GeoJSONFeature = features[0];
-    const clickedDroneProps = clickedDrone.properties as DroneFeatureProperties;
-
     setClickedFeature(clickedDrone);
 
-    if (clickedDrone.geometry.type === "Point") {
-      new mapboxgl.Popup()
-        .setLngLat([
-          clickedDrone.geometry.coordinates[0],
-          clickedDrone.geometry.coordinates[1],
-        ])
-        .setHTML(
-          `<div style="color: black; font-weight: bold;">
-            ${clickedDroneProps?.Name ?? "Unnamed Drone"}
-          </div>`
-        )
-        .addTo(map);
-    }
-
-    setTimeout(() => {
-      setClickedFeature(null);
-    }, 1000);
+    // reset clicked feature after short delay
+    setTimeout(() => setClickedFeature(null), 1000);
   }
 };
 
@@ -85,51 +62,50 @@ export const handleMapMouseMove = (
     layers: [CIRCLES_LAYERS_ID],
   });
 
-  if (features.length) {
-    const hovoredDrone: GeoJSONFeature = features[0];
-    const hovoredDroneProps = hovoredDrone.properties as DroneFeatureProperties;
+  if (features.length === 0) {
+    popup.remove(); // remove popup when not hovering over a drone
+    return;
+  }
 
-    const flightTime = formatElapsedTime(hovoredDroneProps.startFlightTime);
+  const hoveredDrone: GeoJSONFeature = features[0];
+  const hoveredDroneProps = hoveredDrone.properties as DroneFeatureProperties;
 
-    if (hovoredDrone.geometry.type === "Point") {
-      new mapboxgl.Popup()
-        .setLngLat([
-          hovoredDrone.geometry.coordinates[0],
-          hovoredDrone.geometry.coordinates[1],
-        ])
-        .setHTML(
-          `<div style="
-            color: #1c1c1c;
-            display: flex;
-            flex-direction: column; 
-            justify-content: space-between"
-            border-radius:"10px"
-            gap:5px
-            >
-            <div style="font-weight: 600; font-size: 14px; ">
-              ${hovoredDroneProps.Name}
+  const flightTime = formatElapsedTime(hoveredDroneProps.startFlightTime);
+
+  if (hoveredDrone.geometry.type === "Point") {
+    // update and show singleton popup
+    popup
+      .setLngLat([
+        hoveredDrone.geometry.coordinates[0],
+        hoveredDrone.geometry.coordinates[1],
+      ])
+      .setHTML(
+        `
+        <div style="
+          color: #1c1c1c;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          border-radius: 10px;
+          gap:5px;
+        ">
+          <div style="font-weight: 600; font-size: 14px;">
+            ${hoveredDroneProps.Name}
+          </div>
+          <div style="display: flex; justify-content: space-between; gap:10px;">
+            <div style="display: flex; flex-direction: column; justify-content: space-between;">
+              <span>Altitude</span>
+              <span>${hoveredDroneProps.altitude} m</span>
             </div>
-
-            <div style="display: flex; justify-content: space-between; gap:10px; ">
-            <div style="display: flex;
-            flex-direction: column; 
-            justify-content: space-between; ">
-              <span >Altitude</span>
-              <span>${hovoredDroneProps.altitude} m</span>
-            </div>
-
-            <div style="display: flex;
-            flex-direction: column; 
-            
-            justify-content: space-between;">
-              <span >Flight Time</span>
+            <div style="display: flex; flex-direction: column; justify-content: space-between;">
+              <span>Flight Time</span>
               <span>${flightTime}</span>
             </div>
-            </div>
-          </div>`
-        )
-        .addTo(map);
-    }
+          </div>
+        </div>
+      `
+      )
+      .addTo(map);
   }
 };
 
@@ -143,11 +119,9 @@ export function updateDroneData(
     (drone) => drone.properties?.registration === registration
   );
 
-  if (existingIndex !== -1) {
+  if (existingIndex !== -1)
     updateExistingDrone(existingDrones, existingIndex, newFeature);
-  } else {
-    addNewDrone(existingDrones, newFeature);
-  }
+  else addNewDrone(existingDrones, newFeature);
 
   setDrones(existingDrones);
 }
@@ -158,7 +132,11 @@ export function updateExistingDrone(
   newFeature: Feature<Point, DroneFeatureProperties>
 ) {
   const existingDrone = drones[index];
+
+  // append new coordinate to LineString
   existingDrone.geometry.coordinates.push(newFeature.geometry.coordinates);
+
+  // update properties but keep original startFlightTime
   existingDrone.properties = {
     ...generateDroneProperties(newFeature.properties),
     startFlightTime: existingDrone.properties.startFlightTime,
@@ -182,7 +160,6 @@ export function addNewDrone(
       startFlightTime: Date.now(),
     },
   };
-
   drones.push(lineFeature);
 }
 
@@ -195,66 +172,47 @@ export function updateMapVisualization(
   const lineFeatures = existingDrones;
   const pointFeatures = createGeoJSONFeatures(existingDrones);
 
-  updateMapSources(map, lineFeatures, pointFeatures);
+  addMapSources(map, lineFeatures, pointFeatures);
   addMapLayers(map);
 }
 
 export function createGeoJSONFeatures(
   drones: Feature<LineString, DroneFeatureProperties>[]
-) {
-  const pointFeatures: Feature<Point, DroneFeatureProperties>[] = [];
-
-  drones.forEach((drone) => {
-    const coordinates = drone.geometry.coordinates;
-    const lastCoordinate = coordinates[coordinates.length - 1];
-
-    pointFeatures.push({
-      type: "Feature",
-      geometry: {
-        type: "Point",
-        coordinates: lastCoordinate,
-      },
-      properties: { ...drone.properties },
-    });
-  });
-
-  return pointFeatures;
+): Feature<Point, DroneFeatureProperties>[] {
+  return drones.map((drone) => ({
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: drone.geometry.coordinates.at(-1)!,
+    }, // last coordinate
+    properties: { ...drone.properties },
+  }));
 }
 
-export function updateMapSources(
+export function addMapSources(
   map: mapboxgl.Map,
   lineFeatures: Feature<LineString, DroneFeatureProperties>[],
   pointFeatures: Feature<Point, DroneFeatureProperties>[]
 ) {
-  const pathGeoJSON: DroneFeatureCollection = {
+  addMapSource(map, PATHS_SOURCE_ID, {
     type: "FeatureCollection",
     features: lineFeatures,
-  };
-
-  const pointsGeoJSON: DroneFeatureCollection = {
+  });
+  addMapSource(map, POINTS_SOURCE_ID, {
     type: "FeatureCollection",
     features: pointFeatures,
-  };
-
-  updateOrCreateSource(map, PATHS_SOURCE_ID, pathGeoJSON);
-  updateOrCreateSource(map, POINTS_SOURCE_ID, pointsGeoJSON);
+  });
 }
 
-export function updateOrCreateSource(
+export function addMapSource(
   map: mapboxgl.Map,
   sourceId: string,
   data: DroneFeatureCollection
 ) {
   const source = map.getSource(sourceId) as mapboxgl.GeoJSONSource;
 
-  if (source) {
-    source.setData(data);
-  } else {
-    map.addSource(sourceId, {
-      type: "geojson",
-      data,
-    });
-  }
+  if (source) source.setData(data); // update existing source
+  else map.addSource(sourceId, { type: "geojson", data }); // create new source
 }
 
 export function addMapLayers(map: mapboxgl.Map) {
@@ -278,10 +236,7 @@ export function addPathLayer(map: mapboxgl.Map) {
       id: PATHS_LAYER_ID,
       type: "line",
       source: PATHS_SOURCE_ID,
-      paint: {
-        "line-width": 3,
-        "line-color": ["get", "statusColor"],
-      },
+      paint: { "line-width": 3, "line-color": ["get", "statusColor"] },
     });
   }
 }
@@ -313,9 +268,7 @@ export function addDroneIconLayer(map: mapboxgl.Map) {
         "icon-rotate": ["get", "yaw"],
         "icon-allow-overlap": true,
       },
-      paint: {
-        "icon-color": "white",
-      },
+      paint: { "icon-color": "white" },
     });
   }
 }

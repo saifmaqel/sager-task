@@ -36,7 +36,7 @@ export function DroneTabs() {
       </Tabs.Panel>
 
       <Tabs.Panel value="history" pt="md">
-        <Text>Flight history goes here...</Text>
+        <Text>Flight history</Text>
       </Tabs.Panel>
     </Tabs>
   );

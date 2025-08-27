@@ -42,6 +42,7 @@ export function MapboxMapContainer() {
       instance.off("click", (e) =>
         handleMapClick(e, instance, setClickedFeature)
       );
+      instance.off("mousemove", (e) => handleMapMouseMove(e, instance));
     };
   }, [setClickedFeature, setMap]);
 

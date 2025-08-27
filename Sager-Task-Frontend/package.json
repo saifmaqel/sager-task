@@ -13,6 +13,7 @@
     "@mantine/core": "^8.2.7",
     "@mantine/hooks": "^8.2.7",
     "@mantine/notifications": "^8.2.7",
+    "ag-grid-react": "^34.1.2",
     "mapbox-gl": "^3.14.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
