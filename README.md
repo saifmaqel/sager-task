@@ -15,7 +15,7 @@ It was built as part of a coding task, using modern React and real-time updates 
 - [Ag-Grid](https://www.ag-grid.com/)
 
 
--git clone https://github.com/saifmaqel/sager-task.git
--cd Sager-Task-Frontend
--npm install
--npm run dev
+### git clone https://github.com/saifmaqel/sager-task.git
+### cd Sager-Task-Frontend
+### npm install
+### npm run dev
